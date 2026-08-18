@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Supplier Dashboard</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+        body {
+            background: #f5f7fa;
+        }
+
+        .topbar {
+            background: #198754;
+            color: white;
+            padding: 18px 0;
+        }
+
+        .box {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,.08);
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="topbar">
+
+    <div class="container d-flex justify-content-between">
+
+        <div>
+            <h4 class="mb-0">Supplier Dashboard</h4>
+            <small id="username"></small>
+        </div>
+
+        <button
+            onclick="logout()"
+            class="btn btn-light btn-sm">
+            Logout
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="container py-5">
+
+    <div class="card box">
+
+        <div class="card-body">
+
+            <h5>Pharmacy Orders</h5>
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered mt-3">
+
+                    <thead class="table-light">
+
+                    <tr>
+                        <th>Order</th>
+                        <th>Medicines</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+
+                    </thead>
+
+                    <tbody id="ordersTable"></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const userId = localStorage.getItem("user_id");
+const role = localStorage.getItem("role");
+const username = localStorage.getItem("username");
+
+if (!userId || role !== "SUPPLIER") {
+    window.location.href = "/";
+}
+
+document.getElementById("username").innerText =
+    "Logged in as: " + username;
+
+
+async function loadOrders() {
+
+    const response =
+        await fetch("/api/orders/");
+
+    const orders =
+        await response.json();
+
+    const table =
+        document.getElementById("ordersTable");
+
+    table.innerHTML = "";
+
+
+    orders.forEach(order => {
+
+        const items = order.items
+            .map(item =>
+                `${item.drug_name} x ${item.quantity}`
+            )
+            .join("<br>");
+
+
+        let actions = "-";
+
+
+        if (order.status === "PENDING") {
+
+            actions = `
+                <button
+                    class="btn btn-primary btn-sm"
+                    onclick="changeStatus(${order.id}, 'ACCEPTED')">
+                    ACCEPT
+                </button>
+            `;
+
+        }
+
+
+        if (order.status === "ACCEPTED") {
+
+            actions = `
+                <button
+                    class="btn btn-success btn-sm"
+                    onclick="changeStatus(${order.id}, 'DISPATCHED')">
+                    DISPATCH
+                </button>
+            `;
+
+        }
+
+
+        table.innerHTML += `
+            <tr>
+                <td>#${order.id}</td>
+
+                <td>
+                    ${items || "No items"}
+                </td>
+
+                <td>
+                    ${order.status}
+                </td>
+
+                <td>
+                    ${actions}
+                </td>
+            </tr>
+        `;
+
+    });
+
+}
+
+
+async function changeStatus(orderId, newStatus) {
+
+    const response = await fetch(
+        `/api/orders/${orderId}/status/`,
+        {
+            method: "PUT",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                supplier: userId,
+                status: newStatus
+            })
+        }
+    );
+
+
+    const data = await response.json();
+
+
+    if (response.ok) {
+
+        alert(
+            `Order changed to ${newStatus}`
+        );
+
+        loadOrders();
+
+    } else {
+
+        alert(data.error);
+    }
+
+}
+
+
+function logout() {
+
+    localStorage.clear();
+    window.location.href = "/";
+}
+
+
+loadOrders();
+
+</script>
+
+</body>
+</html>
