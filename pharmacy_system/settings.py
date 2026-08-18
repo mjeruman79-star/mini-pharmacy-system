@@ -21,6 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # =========================
 
+# =========================
+# SECURITY
+# =========================
+
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
     "django-insecure-3&p0n0$d56e2$w9c3^e*cw@@el=k0g8jux-k1w&%=tp%r1vu@&"
@@ -30,13 +34,15 @@ DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = ["*"]
 
-# CSRF Trusted Origins (Ruhusa za Railway Domains)
+# Ruhusu HTTPS Headers za Railway Proxy
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# CSRF Trusted Origins
 CSRF_TRUSTED_ORIGINS = [
     "https://*.up.railway.app",
     "https://web-production-4c8f2.up.railway.app",
     "https://web-production-48371.up.railway.app",
 ]
-
 
 # =========================
 # APPLICATIONS
