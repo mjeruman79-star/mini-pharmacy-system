@@ -30,6 +30,13 @@ DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = ["*"]
 
+# CSRF Trusted Origins (Ruhusa za Railway Domains)
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.up.railway.app",
+    "https://web-production-4c8f2.up.railway.app",
+    "https://web-production-48371.up.railway.app",
+]
+
 
 # =========================
 # APPLICATIONS
